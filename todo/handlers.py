@@ -90,7 +90,7 @@ async def show_archive(message: types.Message):
 
 
 async def clear_archive(callback_query: types.CallbackQuery):
-    clear_archive_db()  # Очистка архива в БД
+    clear_archive_db()
     await callback_query.message.edit_text("📭 Архив очищен.")
     await callback_query.answer("Архив удалён!")
 
