@@ -61,7 +61,6 @@ async def toggle_task(callback_query: types.CallbackQuery):
     # Получаем обновленный список задач
     tasks = get_tasks()
 
-    # Если задач нет, заменяем текст сообщения
     if not tasks:
         await callback_query.message.edit_text("📭 Все задачи выполнены и перемещены в архив.")
         return
