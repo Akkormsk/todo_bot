@@ -97,6 +97,7 @@ async def clear_archive(callback_query: types.CallbackQuery):
 
 async def help_command(message: types.Message):
     text = (
+
         "Доступные команды:\n"
         "/start - Начать работу с ботом\n"
         "/add - Добавить задачу\n"
