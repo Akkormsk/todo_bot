@@ -1,8 +1,12 @@
 import sqlite3
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def init_db():
-    conn = sqlite3.connect("tasks.db")
+    conn = sqlite3.connect("/root/todobot/todo/tasks.db")
     cursor = conn.cursor()
 
     cursor.execute("""
