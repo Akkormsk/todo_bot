@@ -22,7 +22,7 @@ async def set_bot_commands(bot):
         BotCommand(command="add", description="Добавить задачу"),
         BotCommand(command="tasks", description="Показать текущие задачи"),
         BotCommand(command="help", description="Показать список команд"),
-        BotCommand(command="archive", description="Показать архив задач"),
+        BotCommand(command="archive", description="Показать архив задач 1"),
     ]
     await bot.set_my_commands(commands)
 
