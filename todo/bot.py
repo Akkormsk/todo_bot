@@ -1,19 +1,19 @@
 import asyncio
 import logging
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand
 from config import TOKEN
 from database import init_db
-from handlers import register_handlers
+from handlers import router
 
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
-# Регистрируем обработчики
-register_handlers(dp)
+# Регистрируем роутер
+dp.include_router(router)
 
 
 async def set_bot_commands(bot):
@@ -22,7 +22,7 @@ async def set_bot_commands(bot):
         BotCommand(command="add", description="Добавить задачу"),
         BotCommand(command="tasks", description="Показать текущие задачи"),
         BotCommand(command="help", description="Показать список команд"),
-        BotCommand(command="archive", description="Показать архив задач ТЕСТ"),
+        BotCommand(command="archive", description="Показать архив задач"),
     ]
     await bot.set_my_commands(commands)
 

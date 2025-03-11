@@ -1,36 +1,18 @@
 import sqlite3
-from aiogram import types
+from aiogram import types, Router
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram import Dispatcher
+from aiogram.filters import Command
 from database import add_task, get_tasks, get_archive, toggle_task_completion, clear_archive_db
 
-
-def register_handlers(dp: Dispatcher):
-    dp.callback_query.register(clear_archive, lambda c: c.data == "clear_archive")
-    dp.register_message_handler(start, commands=["start"])
-    dp.register_message_handler(add, commands=["add"])
-    dp.register_message_handler(show_tasks, commands=["tasks"])
-    dp.register_message_handler(show_archive, commands=["archive"])
-    dp.register_message_handler(help_command, commands=["help"])
-    dp.register_callback_query_handler(toggle_task, lambda c: c.data.startswith("task_"))
-    dp.register_message_handler(add_task_from_text)
+router = Router()
 
 
-async def add_task_from_text(message: types.Message):
-    """Добавляет задачу, если пользователь просто отправил текст без команды."""
-    task_text = message.text.strip()
-
-    # Проверяем, что это не команда (не начинается с "/")
-    if not task_text.startswith("/"):
-        add_task(task_text)
-        await message.answer(f"✅ Задача добавлена: {task_text}")
-        await show_tasks(message)  # Показываем обновлённый список задач
-
-
+@router.message(Command("start"))
 async def start(message: types.Message):
     await message.answer("Привет! Это твой список дел. Добавь задачу с помощью /add <текст>.")
 
 
+@router.message(Command("add"))
 async def add(message: types.Message):
     task_text = message.text[5:].strip()
     if task_text:
@@ -41,6 +23,7 @@ async def add(message: types.Message):
         await message.answer("❌ Напиши задачу после команды /add")
 
 
+@router.message(Command("tasks"))
 async def show_tasks(message: types.Message):
     tasks = get_tasks()
     if not tasks:
@@ -55,6 +38,7 @@ async def show_tasks(message: types.Message):
     await message.answer("📌 Твои задачи:", reply_markup=keyboard)
 
 
+@router.callback_query(lambda c: c.data.startswith("task_"))
 async def toggle_task(callback_query: types.CallbackQuery):
     task_id = int(callback_query.data.split("_")[1])
     toggle_task_completion(task_id)  # Меняем статус в БД
@@ -78,6 +62,7 @@ async def toggle_task(callback_query: types.CallbackQuery):
     await callback_query.answer("Задача обновлена!")
 
 
+@router.message(Command("archive"))
 async def show_archive(message: types.Message):
     archive = get_archive()
     if archive:
@@ -90,12 +75,14 @@ async def show_archive(message: types.Message):
         await message.answer("📭 Архив пуст.")
 
 
+@router.callback_query(lambda c: c.data == "clear_archive")
 async def clear_archive(callback_query: types.CallbackQuery):
     clear_archive_db()
     await callback_query.message.edit_text("📭 Архив очищен.")
     await callback_query.answer("Архив удалён!")
 
 
+@router.message(Command("help"))
 async def help_command(message: types.Message):
     text = (
         "Доступные команды:\n"
@@ -106,3 +93,15 @@ async def help_command(message: types.Message):
         "/help - Показать список команд"
     )
     await message.answer(text)
+
+
+@router.message()
+async def add_task_from_text(message: types.Message):
+    """Добавляет задачу, если пользователь просто отправил текст без команды."""
+    task_text = message.text.strip()
+
+    # Проверяем, что это не команда (не начинается с "/")
+    if not task_text.startswith("/"):
+        add_task(task_text)
+        await message.answer(f"✅ Задача добавлена: {task_text}")
+        await show_tasks(message)  # Показываем обновлённый список задач
