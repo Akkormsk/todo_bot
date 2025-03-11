@@ -90,7 +90,7 @@ async def help_command(message: types.Message):
         "/add - Добавить задачу\n"
         "/tasks - Показать текущие задачи\n"
         "/archive - Показать архив задач\n"
-        "/help - Показать список команд 2"
+        "/help - Показать список команд"
     )
     await message.answer(text)
 
