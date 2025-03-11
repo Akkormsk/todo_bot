@@ -3,7 +3,6 @@ from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram import Dispatcher
 from database import add_task, get_tasks, get_archive, toggle_task_completion, clear_archive_db
-from buttons import generate_task_buttons
 
 
 def register_handlers(dp: Dispatcher):
@@ -14,6 +13,7 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(show_archive, commands=["archive"])
     dp.register_message_handler(help_command, commands=["help"])
     dp.register_callback_query_handler(toggle_task, lambda c: c.data.startswith("task_"))
+    dp.register_message_handler(add_task_from_text)
 
 
 async def add_task_from_text(message: types.Message):
@@ -24,6 +24,7 @@ async def add_task_from_text(message: types.Message):
     if not task_text.startswith("/"):
         add_task(task_text)
         await message.answer(f"✅ Задача добавлена: {task_text}")
+        await show_tasks(message)  # Показываем обновлённый список задач
 
 
 async def start(message: types.Message):
@@ -35,6 +36,7 @@ async def add(message: types.Message):
     if task_text:
         add_task(task_text)
         await message.answer(f"✅ Задача добавлена: {task_text}")
+        await show_tasks(message)  # Показываем обновлённый список задач
     else:
         await message.answer("❌ Напиши задачу после команды /add")
 
@@ -47,8 +49,7 @@ async def show_tasks(message: types.Message):
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[])
     for task_id, description, completed in tasks:
-        checkmark = " ✅" if completed else ""
-        button = InlineKeyboardButton(text=f"\u200B{description}{checkmark}", callback_data=f"task_{task_id}")
+        button = InlineKeyboardButton(text=f"\u200B{description}", callback_data=f"task_{task_id}")
         keyboard.inline_keyboard.append([button])
 
     await message.answer("📌 Твои задачи:", reply_markup=keyboard)
@@ -68,7 +69,7 @@ async def toggle_task(callback_query: types.CallbackQuery):
     # Перерисовываем клавиатуру с обновленным списком задач
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(
-            text=f"\u200B{task[1]} ✅" if task[2] else f"\u200B{task[1]}",
+            text=f"\u200B{task[1]}",
             callback_data=f"task_{task[0]}"
         )] for task in tasks
     ])
@@ -94,9 +95,9 @@ async def clear_archive(callback_query: types.CallbackQuery):
     await callback_query.message.edit_text("📭 Архив очищен.")
     await callback_query.answer("Архив удалён!")
 
+
 async def help_command(message: types.Message):
     text = (
-
         "Доступные команды:\n"
         "/start - Начать работу с ботом\n"
         "/add - Добавить задачу\n"
